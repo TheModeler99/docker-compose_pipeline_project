@@ -48,13 +48,13 @@ docker rm <containerID> #to delete a specific container ..Note# must confirm con
 
 docker rm -f $(docker ps -aq) # Forcefully remove all containers without stopping them
 
-docker run -it ubuntu bash # to start the ubuntu container and log into it
+docker run -it ubuntu bash #to start the ubuntu container and log into it
 
-cat /etc/*release* # to list OS details of the container
+docker exec <containerID> -- cat /etc/*release*  #to list OS details of the container
 
 docker commit <containerID> <name>
 
-docker exec -it <containerID> bash  # '-it' = interctive mode, to login to the container using a bash terminal
+docker exec -it <containerID> bash  # '-it' = interctive mode, to login to the container using a bash terminal, similar to ssh
 
 #################################################################################################
 
@@ -83,21 +83,36 @@ docker run --name <container-name> -d -p 8000:8080 <image-name:tag>
 
 
 ###################################################################################################
-## Docker volume
+## Docker Named volumes
+# These are stored in the Docker storage directory.
 
 docker volume create <volume-name>
+docker volume ls
+docker inspect <volume-name>
+docker volume rm <volume-name>
 
-docker run -v <host-path:container-path> <image>
+# TO start container with volume mounted on /opt within the container
+docker run -d -p host-port:cont-port \
+  --name container-name \
+  -v volume-name:/opt \
+  image-name
 
 docker run --name container-name -v c:/Users/Anselme/Documents/Demos/docker/website:/usr/share/nginx/html -d -p 9000:80 nginx
 
 docker run -d -p 9000:80 -v c:/Users/Anselme/Documents/Demos/docker/website:/usr/share/nginx/html -v c:/Users/Anselme/Documents/Demos/docker/logs:/var/log/nginx --name container-name Image-name
 
 
-docker exec <containerID> -- cat /etc/*release*
+## Bind mounts
+#Another form of persistant storage, uses a local host file or directory as container mount, must use the absolute path
 
-docker exec -it container-name bash 
+# To start container with volume mounted on /opt within the container, "$pwd" returns the absolute path of current directory
+docker run -d \
+  -it \
+  --name container-name \
+  -v /$(pwd):/opt \
+  image-name
+#OR
+docker run -v <host-path:container-path> <image>
 
-
-
-
+#Mount the website_docker-volume directory to nginx container which listens on port 80.
+docker run --name nginx-docker -v /$(pwd)/website_docker-volume:/usr/share/nginx/html -d -p 9000:80 nginx
