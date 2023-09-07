@@ -1,0 +1,55 @@
+
+version: "3.9"
+services:
+  nginx:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: nginx
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8081"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s 
+    ports:
+      - 8081:80
+    depends_on:
+      - jenkins
+    volumes:
+      - nginx:/opt
+    networks:
+      - frontier
+    
+  jenkins:
+    image: jenkins/jenkins
+    ports:
+      - 8585:8080
+    # networks:
+    #   - frontier
+    
+  sonarqube:
+    image: sonarqube
+    ports:
+      - 8082:9000
+    volumes:
+      - data:/opt/sonarqube/data
+      - logs:/opt/sonarqube/logs
+    networks:
+      - frontier
+
+  nexus:
+    image: dockette/nexus
+    ports:
+      - 9000:8081
+    networks:
+      - frontier
+networks:
+  frontier:
+  backtier:
+volumes:
+  data:
+  logs:
+  nginx:
+name: tower-project
+  
